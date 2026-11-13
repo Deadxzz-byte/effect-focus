@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Effect Focus</title>
+<meta name="description" content="Effect Focus: protótipo de chat com servidores, canais, mensagens diretas e salas de voz, com tema espacial.">
+<style>
+:root{--bg:#eef0fa;--rail:#dfe3f5;--panel:#e7eaf8;--card:#fff;--tx:#161a33;--mu:#5d6490;--ac:#0b7f8c;--onac:#fff;--ok:#0fa37f;--bad:#e5484d;--bd:#cdd2ee;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12162b;--rail:#0c0f1f;--panel:#171c36;--card:#1f2646;--tx:#e8ecff;--mu:#8e96c4;--ac:#2bb5c4;--onac:#06222a;--ok:#35e0b5;--bad:#ff6b70;--bd:#2a3158}}
+:root[data-theme="dark"]{--bg:#12162b;--rail:#0c0f1f;--panel:#171c36;--card:#1f2646;--tx:#e8ecff;--mu:#8e96c4;--ac:#2bb5c4;--onac:#06222a;--ok:#35e0b5;--bad:#ff6b70;--bd:#2a3158}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.45 "Trebuchet MS","Segoe UI",system-ui,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+h1,h2,h3{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:700;letter-spacing:-.01em}
+.logo{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;border:3px solid var(--ac);position:relative}
+.logo:after{content:"";width:12px;height:12px;border-radius:50%;background:var(--ac)}
+.auth{height:100%;display:grid;place-items:center;padding:16px}
+.box{width:100%;max-width:380px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:28px;display:grid;gap:12px}
+.box .brand{display:flex;align-items:center;gap:10px;font:700 26px Georgia,serif}
+label{display:grid;gap:4px;color:var(--mu);font-size:13px}
+input,textarea{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;width:100%}
+.btn{background:var(--ac);color:var(--onac);border-radius:8px;padding:10px 14px;font-weight:700}
+.btn.sec{background:var(--panel);color:var(--tx);border:1px solid var(--bd)}
+.btn.bad{background:var(--bad);color:#fff}
+.err{color:var(--bad);font-size:13px;min-height:18px}
+.link{color:var(--ac);text-decoration:underline}
+#app{height:100%;display:grid;grid-template-columns:68px 240px 1fr 220px}
+.rail{background:var(--rail);display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0;overflow-y:auto}
+.srv{width:46px;height:46px;border-radius:50%;background:var(--card);border:2px solid transparent;font-weight:700;transition:border-radius .15s}
+.srv:hover,.srv.on{border-radius:14px;border-color:var(--ac)}
+.side{background:var(--panel);display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--bd)}
+.side header,.main header{height:52px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bd);gap:8px}
+.chs{flex:1;overflow-y:auto;padding:8px}
+.grp{color:var(--mu);font-size:12px;padding:10px 8px 4px;display:flex;justify-content:space-between}
+.ch{display:flex;gap:8px;width:100%;text-align:left;padding:7px 10px;border-radius:7px;color:var(--mu)}
+.ch:hover{background:var(--card)}.ch.on{background:var(--card);color:var(--tx);font-weight:700}
+.vp{padding:2px 10px 2px 34px;color:var(--mu);font-size:13px;display:flex;align-items:center;gap:6px}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;flex:none;font-size:13px;position:relative}
+.av.sm{width:22px;height:22px;font-size:11px}
+.av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.big .av{width:72px;height:72px;font-size:28px}
+.screen{flex:2;min-height:200px;background:#000;border-radius:10px;margin:12px 16px 0;display:grid;overflow:hidden}
+.screen video{width:100%;height:100%;object-fit:contain;min-height:0}
+.screen+.stage .tile{width:110px;height:100px}.screen+.stage .tile .av{width:36px;height:36px}
+.mi{max-width:min(320px,100%);max-height:260px;border-radius:10px;display:block;margin-top:4px}
+.crow{display:flex;gap:6px;align-items:center}.crow input{flex:1;min-width:0}
+.picker{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:8px;margin-bottom:8px;max-height:230px;overflow:auto}
+.picker button:not(.ib){font-size:22px;padding:4px}.picker .tabs{display:flex;gap:6px;margin-bottom:6px}
+.stk{font-size:60px;display:inline-block;line-height:1.1;animation-duration:1.4s;animation-iteration-count:infinite;animation-timing-function:ease-in-out}
+.a-fly{animation-name:kfly}.a-spin{animation-name:kspin;animation-timing-function:linear}.a-pulse,.a-beat{animation-name:kbeat}.a-shake{animation-name:kshake;animation-duration:.5s}.a-flick{animation-name:kflick;animation-duration:.8s}.a-wave{animation-name:kwave}.a-pop{animation-name:kpop}.a-bounce,.a-hover{animation-name:kbounce}
+@keyframes kfly{50%{transform:translate(10px,-10px) rotate(8deg)}}@keyframes kspin{to{transform:rotate(360deg)}}@keyframes kbeat{50%{transform:scale(1.25)}}@keyframes kshake{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}@keyframes kflick{50%{transform:scale(1.1) rotate(3deg);opacity:.8}}@keyframes kwave{50%{transform:rotate(25deg)}}@keyframes kpop{50%{transform:scale(1.3)}}@keyframes kbounce{50%{transform:translateY(-12px)}}
+@media (prefers-reduced-motion:reduce){.stk{animation:none}}
+.talk{box-shadow:0 0 0 2px var(--ok)}
+.me{padding:8px;border-top:1px solid var(--bd);display:flex;align-items:center;gap:8px;background:var(--rail)}
+.me .nm{flex:1;min-width:0;line-height:1.2}.me small{color:var(--mu)}
+.vbar{padding:8px 10px;border-top:1px solid var(--bd);background:var(--card);display:none;gap:6px;align-items:center;flex-wrap:wrap}
+.vbar.on{display:flex}.vbar b{color:var(--ok);flex:1;min-width:100%;font-size:13px}
+.ib{padding:6px 10px;border-radius:7px;background:var(--panel);border:1px solid var(--bd);font-size:13px}.ib.off{background:var(--bad);color:#fff;border-color:var(--bad)}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.m{display:flex;gap:10px}.m .h{font-weight:700}.m .h small{color:var(--mu);font-weight:400;margin-left:6px}
+.m p{margin:0;overflow-wrap:anywhere}
+.empty{margin:auto;text-align:center;color:var(--mu);max-width:300px}
+.comp{padding:12px 16px}
+.stage{flex:1;display:flex;flex-wrap:wrap;gap:14px;padding:20px;align-content:center;justify-content:center;overflow-y:auto}
+.tile{width:150px;height:130px;background:var(--card);border:1px solid var(--bd);border-radius:12px;display:grid;place-items:center;text-align:center;padding:10px;gap:4px}
+.tile .av{width:54px;height:54px;font-size:20px}
+.mem{background:var(--panel);border-left:1px solid var(--bd);padding:12px;overflow-y:auto}
+.mem div.r{display:flex;gap:8px;align-items:center;padding:5px 0}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mu);display:inline-block}.dot.on{background:var(--ok)}
+.modal{position:fixed;inset:0;background:rgba(5,8,20,.6);display:none;place-items:center;padding:16px;z-index:9}.modal.on{display:grid}
+.modal .box{max-width:400px;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto}
+.burger{display:none}
+select{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px;color:var(--tx);max-width:55%}
+.scrim{display:none}
+@media (max-width:900px){#app{grid-template-columns:1fr;height:100dvh}
+.rail{position:fixed;left:0;top:0;bottom:0;width:64px;z-index:6;transform:translateX(-100%);transition:transform .2s}
+.side{position:fixed;left:64px;top:0;bottom:0;width:min(260px,72vw);z-index:6;transform:translateX(-300%);transition:transform .2s}
+.mem{position:fixed;right:0;top:0;bottom:0;width:min(260px,82vw);z-index:6;transform:translateX(100%);transition:transform .2s}
+#app.nav .rail,#app.nav .side,#app.memo .mem{transform:none}
+#app.nav .scrim,#app.memo .scrim{display:block;position:fixed;inset:0;background:rgba(5,8,20,.55);z-index:5}
+.burger{display:inline-block}input,textarea,select{font-size:16px}.ib,.ch,.btn{min-height:40px}.tile{width:calc(50% - 10px)}.stage{padding:12px}.comp{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="modal" id="modal"><div class="box" id="mbox"></div></div>
+<script>
+const $=s=>document.querySelector(s);
+const COLORS=["#4f6bff","#e0467c","#0fa37f","#d9822b","#8a5cf6","#2aa6c9"];
+let db,S={view:"login",srv:null,ch:null,mic:true,deaf:false,voice:null,stream:null,talk:{}};
+function load(){try{db=JSON.parse(localStorage.getItem("ef_db"))}catch(e){}
+ if(!db)db={users:{},session:null,servers:[]}}
+function save(){try{localStorage.setItem("ef_db",JSON.stringify(db));return true}catch(e){return false}}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const me=()=>db.users[db.session];
+const photoOf=n=>Object.values(db.users).find(x=>x.name===n)?.photo;
+const SP={};
+function rng(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}let a=h>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function space(seed,w=96,h=96){const k=seed+w+"x"+h;if(SP[k])return SP[k];const R=rng(seed),c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");
+ const h0=R()*360;x.fillStyle=`hsl(${h0},60%,6%)`;x.fillRect(0,0,w,h);x.globalCompositeOperation="lighter";
+ for(let i=0;i<5;i++){const cx=R()*w,cy=R()*h,r=(.35+R()*.6)*Math.max(w,h),hh=(h0+R()*120-30+360)%360,g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,`hsla(${hh},85%,55%,.5)`);g.addColorStop(1,"hsla(0,0%,0%,0)");x.fillStyle=g;x.fillRect(0,0,w,h)}
+ x.globalCompositeOperation="source-over";
+ for(let i=0;i<w*h/60;i++){x.fillStyle=`rgba(255,255,255,${.3+R()*.7})`;const s=R()<.06?1.6:.7;x.fillRect(R()*w,R()*h,s,s)}
+ if(R()<.8){const px=w*(.25+R()*.5),py=h*(.3+R()*.4),pr=Math.min(w,h)*(.12+R()*.16),ph=R()*360,g=x.createRadialGradient(px-pr*.4,py-pr*.4,pr*.1,px,py,pr);g.addColorStop(0,`hsl(${ph},70%,70%)`);g.addColorStop(1,`hsl(${ph+30},60%,18%)`);
+  x.save();x.shadowColor=`hsla(${ph},90%,60%,.6)`;x.shadowBlur=pr*.8;x.fillStyle=g;x.beginPath();x.arc(px,py,pr,0,7);x.fill();x.restore();
+  if(R()<.5){x.strokeStyle=`hsla(${ph+20},60%,80%,.6)`;x.lineWidth=Math.max(1,pr*.12);x.beginPath();x.ellipse(px,py,pr*1.7,pr*.45,-.4,0,7);x.stroke()}}
+ return SP[k]=c.toDataURL("image/jpeg",.85)}
+const av=(n,c,cls="")=>{const p=photoOf(n)||space(n||"x");return `<span class="av ${cls}"><img alt="" src="${p}"></span>`};
+const BOTS=[{name:"Luna",color:"#e0467c"},{name:"Theo",color:"#d9822b"},{name:"Iris",color:"#0fa37f"}];
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function botReply(b,t){const u=me().name.split(" ")[0],l=t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+ const has=(...w)=>w.some(x=>new RegExp("\\b"+x).test(l));
+ const pre=pick({Luna:["Eba! ","Uhul! ","Nossa, "],Theo:["","Hm, ","Olha, "],Iris:["Interessante! ","Ah, ","Curioso, "]}[b.name]);
+ const R=(...a)=>pre+pick(a);
+ if(has("oi\\b","ola\\b","e ai","opa\\b","salve","bom dia","boa tarde","boa noite"))return pick([`Oi, ${u}! Como você está hoje?`,`E aí, ${u}! Que bom te ver por aqui.`,`Olá, ${u}! Sobre o que vamos conversar?`]);
+ if(has("tudo bem","como vai","como voce esta","como vc"))return `Estou ótimo, ${u}! E você, como está?`;
+ if(has("obrigad","valeu","brigad"))return `Por nada, ${u}! Estou aqui para isso.`;
+ if(has("tchau","ate mais","flw","fui\\b"))return `Até mais, ${u}! Volte quando quiser.`;
+ if(has("quem e voce","seu nome","quem voce"))return `Eu sou ${b.name}, um bot de demonstração do Effect Focus.`;
+ if(has("meu nome"))return `Eu sei, ${u}! Está no seu perfil.`;
+ if(has("que horas","hora\\b"))return `Agora são ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}.`;
+ if(has("ajuda","como funciona","como faco"))return "Crie servidores e canais no menu à esquerda, troque sua foto em Perfil e entre numa sala de voz para fazer a call.";
+ if(has("call\\b","voz\\b","sala de foco","microfone"))return R("Boa ideia! Entre na Sala de foco e eu apareço por lá.","Bora para a call, estou pronto.");
+ if(has("kkk","haha","rs\\b","engracad"))return R("Hahaha, essa foi boa!","Kkk, estou rindo daqui.");
+ if(has("triste","cansad","mal\\b","estressad","ansios","chatead"))return `Poxa, ${u}. Respira um pouco. Quer contar o que aconteceu?`;
+ if(has("feliz","animad","otimo","incrivel","consegui","passei"))return R(`Que notícia boa, ${u}! Comemore.`,`Adorei ouvir isso, ${u}!`);
+ if(has("estud","prova","trabalh","projeto","foco\\b","tarefa"))return R("Foco é tudo! Que tal uma sessão de 25 minutos sem distração?","Divida em partes pequenas e feche uma por vez.");
+ if(has("comida","fome","pizza","cafe\\b","almoc","jantar"))return R("Deu fome agora! Qual é o seu prato favorito?","Um café cairia bem agora.");
+ if(has("jogo","jogar","game"))return R("Qual jogo você tem jogado? Quero montar uma partida.","Bora jogar! Chame o pessoal na call.");
+ if(has("musica","banda","cantor"))return R("Que tipo de música você curte?","Música ajuda muito a manter o foco.");
+ if(has("suave","tranquil","de boa","blz","beleza","show","daora","massa","firmeza","tmj"))return R(`Suave então, ${u}!`,"Tranquilo por aqui também, de boa.","Beleza! Bora aproveitar o dia.");
+ if(has("anime","naruto","one piece","dragon ball","manga","otaku","jujutsu","demon slayer","attack on titan"))return R("Anime é vida! Qual você está assistindo agora?","Ótima escolha. Prefere os clássicos ou os lançamentos?","Qual personagem é o seu favorito?");
+ if(has("desenho","cartoon","animacao","pixar","ilustracao"))return R("Desenho é demais! Você desenha ou só assiste?","Qual desenho marcou a sua infância?");
+ if(has("filme","serie","netflix","cinema","episodio"))return R("Qual filme ou série você recomenda?","Maratonar é sempre uma boa. Está vendo algo agora?");
+ if(has("dormir","sono\\b","acordei","insonia"))return R("Sono é sagrado! Tente dormir cedo hoje.","Acordar cedo é difícil mesmo. Já tomou um café?");
+ if(has("mano","mds","vei\\b","nossa"))return R("É isso aí!","Pois é, né?","Nem me fale.");
+ if(has("sim\\b","claro","com certeza","bora"))return R("Boa, vamos nessa!","Fechou então!");
+ if(has("nao\\b","nada\\b"))return R("Sem problemas. Se mudar de ideia, é só chamar.","Tranquilo, fique à vontade.");
+ if(l.includes("?"))return R(`Boa pergunta, ${u}. O que você acha?`,`Me conte o que você pensa primeiro, ${u}.`);
+ const w=(t.match(/[A-Za-zÀ-ÿ]{5,}/g)||[]).sort((x,y)=>y.length-x.length)[0];
+ return w?R(`Me conta mais sobre “${w}”.`,`Por que “${w}” está na sua cabeça hoje, ${u}?`):R("Entendi! Continue.",`Estou te ouvindo, ${u}.`)}
+function readImg(file,w,h,cb,err){
+ if(file.type==="image/gif"||file.type==="image/webp"){if(file.size>1400000){err&&err("Este arquivo passa de 1,4 MB. Use um GIF menor para manter a animação.");return}const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file);return}
+ const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{const c=document.createElement("canvas");c.width=w;c.height=h;const k=Math.max(w/i.width,h/i.height),sw=w/k,sh=h/k;c.getContext("2d").drawImage(i,(i.width-sw)/2,(i.height-sh)/2,sw,sh,0,0,w,h);cb(c.toDataURL("image/jpeg",.8))};i.onerror=()=>err&&err("Não consegui abrir essa imagem.");i.src=r.result};r.readAsDataURL(file)}
+function newServer(name){const g=uid(),v=uid();
+ return{id:uid(),name,owner:db.session,channels:[{id:g,name:"geral",type:"text"},{id:uid(),name:"ideias",type:"text"},{id:v,name:"Sala de foco",type:"voice"}],
+ msgs:{[g]:[{u:"Luna",c:"#e0467c",t:"Bem-vindo ao "+name+"! Fale no #geral ou entre na Sala de foco.",at:Date.now()}]},members:[db.session]}}
+function render(){
+ if(!db.session){renderAuth();return}
+ const u=me();let srvs=db.servers.filter(s=>s.members.includes(db.session));
+ if(S.srv==="@dm"){renderDM(srvs);return}
+ if(!S.srv||!srvs.find(s=>s.id===S.srv))S.srv=srvs[0]?.id||null;
+ const sv=srvs.find(s=>s.id===S.srv);
+ if(sv&&(!S.ch||!sv.channels.find(c=>c.id===S.ch)))S.ch=sv.channels[0].id;
+ const ch=sv?.channels.find(c=>c.id===S.ch);
+ $("#root").innerHTML=`<div id="app">
+ <nav class="rail" aria-label="Servidores">
+  <button class="srv" id="dmb" title="Mensagens diretas" aria-label="Mensagens diretas">💬</button>
+  ${srvs.map(s=>`<button class="srv ${s.id===S.srv?"on":""}" data-s="${s.id}" title="${esc(s.name)}" style="background:url(${space(s.name+s.id,92,92)}) center/cover;color:#fff;text-shadow:0 1px 3px #000">${esc(s.name.slice(0,2))}</button>`).join("")}
+  <button class="srv" id="addS" title="Criar servidor">+</button>
+ </nav>
+ <aside class="side" id="side">
+  <header><h2>${sv?esc(sv.name):"Effect Focus"}</h2>${sv?`<button class="ib" id="inv">Convidar</button>`:""}</header>
+  <div class="chs">${sv?chList(sv):`<div class="empty" style="padding:20px">Você ainda não está em nenhum servidor. Crie o primeiro com o botão +.</div>`}</div>
+  <div class="vbar ${S.voice?"on":""}" id="vbar"><b>Voz conectada${S.voice?" · "+esc(S.voice.name):""}</b>
+   <button class="ib ${S.mic?"":"off"}" id="mic">${S.mic?"Microfone":"Mudo"}</button>
+   <button class="ib ${S.deaf?"off":""}" id="deaf">${S.deaf?"Sem áudio":"Áudio"}</button>
+   <button class="ib" id="leave">Sair</button></div>
+  <div class="me">${av(u.name,u.color)}<div class="nm"><div>${esc(u.name)}</div><small>${esc(u.status)}</small></div>
+   <button class="ib" id="prof">Perfil</button></div>
+ </aside>
+ <section class="main">
+  <header><div style="display:flex;gap:8px;align-items:center"><button class="ib burger" id="bg">Menu</button><h3>${ch?(ch.type==="text"?"# ":"Voz · ")+esc(ch.name):"Bem-vindo"}</h3></div><div style="display:flex;gap:6px">${aiBadge()}<button class="ib burger" id="bm">Membros</button></div></header>
+  ${ch?(ch.type==="text"?textView(sv,ch):voiceView(sv,ch)):`<div class="empty">Crie um servidor para conversar e fazer calls.</div>`}
+ </section>
+ <aside class="mem"><h3 style="font-size:14px;margin-bottom:6px">Membros</h3>${sv?memList(sv):""}</aside><div class="scrim" id="scrim"></div></div>`;
+ bind(sv,ch);
+ const m=$(".msgs");if(m)m.scrollTop=m.scrollHeight;
+}
+function chList(sv){const t=sv.channels.filter(c=>c.type==="text"),v=sv.channels.filter(c=>c.type==="voice");
+ return `<div class="grp">Canais de texto<button data-add="text" class="ib" style="padding:0 7px">+</button></div>`+
+ t.map(c=>`<button class="ch ${c.id===S.ch?"on":""}" data-c="${c.id}"># ${esc(c.name)}</button>`).join("")+
+ `<div class="grp">Canais de voz<button data-add="voice" class="ib" style="padding:0 7px">+</button></div>`+
+ v.map(c=>`<button class="ch ${c.id===S.ch?"on":""}" data-c="${c.id}">Voz · ${esc(c.name)}</button>`+
+  voiceUsers(c).map(p=>`<div class="vp">${av(p.name,p.color,"sm "+(S.talk[p.name]?"talk":""))}${esc(p.name)}</div>`).join("")).join("")}
+function voiceUsers(c){const l=[];if(S.voice?.id===c.id){const u=me();l.push({name:u.name,color:u.color})}
+ if(c.bots)c.bots.forEach(b=>l.push(b));return l}
+function textView(sv,ch){const ms=sv.msgs[ch.id]||[];
+ return `<div class="msgs">${ms.length?ms.map(m=>`<div class="m">${av(m.u,m.c)}<div><div class="h" style="color:${roleOf(sv,keyOf(m.u)).color}">${esc(m.u)}<small>${new Date(m.at).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</small></div>${m.img?`<img class="mi" src="${m.img}" alt="Imagem enviada">`:""}${m.st?`<span class="stk a-${esc(m.a)}">${esc(m.st)}</span>`:""}${m.t?`<p>${esc(m.t)}</p>`:""}</div></div>`).join(""):`<div class="empty">Nada por aqui ainda. Envie a primeira mensagem em #${esc(ch.name)}.</div>`}</div>
+ ${S.typing&&S.typing.id===ch.id?`<div style="padding:0 16px 4px;color:var(--mu);font-size:13px">${esc(S.typing.name)} está digitando…</div>`:""}<div class="comp" id="f">${S.err?`<div class="err" style="padding:0 16px">${esc(S.err)}</div>`:""}${S.pick?pickerHTML():""}<div class="crow"><button type="button" class="ib" data-pk="emo" aria-label="Emojis">😀</button><button type="button" class="ib" data-pk="gif" aria-label="GIFs e figurinhas">GIF</button><label class="ib" style="cursor:pointer" aria-label="Enviar imagem">📎<input id="pimg" type="file" accept="image/*" hidden></label><input id="txt" placeholder="Mensagem em ${sv.id==="@dm"?"@":"#"}${esc(ch.name)}" autocomplete="off" aria-label="Mensagem"><button type="button" class="ib" id="sendb">Enviar</button></div></div>`}
+function voiceView(sv,ch){const us=voiceUsers(ch),inn=S.voice?.id===ch.id;
+ return `${S.screen&&inn?`<div id="screen" class="screen"></div>`:""}<div class="stage">${us.length?us.map(p=>`<div class="tile">${av(p.name,p.color,S.talk[p.name]?"talk":"")}<b>${esc(p.name)}</b><small style="color:var(--mu)">${S.talk[p.name]?"falando":"conectado"}</small></div>`).join(""):`<div class="empty">Ninguém na sala. Entre para começar a call.</div>`}</div>
+ <div class="comp" style="text-align:center">${S.shareErr?`<div class="err">${esc(S.shareErr)} <a class="link" target="_blank" rel="noopener" href="https://claude.ai/artifact/KnsF4HWne313tzCnuwusGk">Abrir em nova aba</a></div>`:""}${inn?`<button class="btn sec" id="share">${S.screen?"Parar compartilhamento":"Compartilhar tela"}</button> <button class="btn bad" id="leave2">Sair da call</button>`:`<button class="btn" id="join">Entrar na call</button>`}</div>`}
+function ensureRoles(sv){if(!sv.roles){sv.roles=[{id:"owner",name:"Dono",color:"#e0a020",admin:1},{id:"mod",name:"Moderador",color:"#4f6bff",admin:1},{id:"mem",name:"Membro",color:"#8e96c4"}];sv.mr={};sv.mr[sv.owner]="owner";sv.mr["bot:Luna"]="mod"}return sv}
+const roleOf=(sv,k)=>{ensureRoles(sv);return sv.roles.find(r=>r.id===sv.mr[k])||sv.roles.find(r=>r.id==="mem")};
+const keyOf=n=>Object.keys(db.users).find(k=>db.users[k].name===n)||"bot:"+n;
+const can=(sv,p)=>sv.owner===db.session||!!(roleOf(sv,db.session).admin||roleOf(sv,db.session)[p]);
+const isAdmin=sv=>can(sv,"rl");
+const BIO={Luna:"Adora anime, música e boas conversas.",Theo:"Foco total. Café sempre ao lado.",Iris:"Curiosa com o espaço e a ciência."};
+function members(sv){ensureRoles(sv);const L=sv.members.filter(k=>db.users[k]).map(k=>({k,name:db.users[k].name,s:db.users[k].status,on:1}));BOTS.forEach((b,i)=>L.push({k:"bot:"+b.name,name:b.name,s:"Bot com IA",on:i<2}));return L}
+function memList(sv){const L=members(sv);
+ return (isAdmin(sv)?`<button class="ib" id="roles" style="width:100%;margin-bottom:8px">Gerenciar cargos</button>`:"")+sv.roles.map(r=>{const m=L.filter(x=>roleOf(sv,x.k).id===r.id);return m.length?`<div class="grp" style="padding:8px 0 2px">${esc(r.name)} · ${m.length}</div>`+m.map(x=>`<div class="r" data-m="${esc(x.k)}" tabindex="0" role="button" style="cursor:pointer">${av(x.name,"","sm")}<div style="min-width:0"><div style="color:${r.color};font-weight:700">${esc(x.name)} <span class="dot ${x.on?"on":""}"></span></div><small style="color:var(--mu)">${esc(x.s)}</small></div></div>`).join(""):""}).join("")}
+function modalCard(sv,k){const u=db.users[k]||{name:k.slice(4),status:"Bot com IA",bio:BIO[k.slice(4)]||""},r=roleOf(sv,k);
+ modal(`<div style="margin:-28px -28px 0;height:100px;border-radius:14px 14px 0 0;background:url(${u.banner||space(u.name+"bn",480,160)}) center/cover"></div><div class="big" style="margin-top:-46px;width:78px;border:4px solid var(--card);border-radius:50%">${av(u.name,"")}</div><h2>${esc(u.name)}</h2><div style="color:${r.color};font-weight:700">● ${esc(r.name)}</div><div style="color:var(--mu)">${esc(u.status)}</div>${u.bio?`<p style="margin:0">${esc(u.bio)}</p>`:""}${k!==db.session?`<button class="btn" data-k="${esc(k)}" onclick="openDM(this.dataset.k)">Enviar mensagem</button>`:""}<button class="btn sec" onclick="closeM()">Fechar</button>`)}
+function modalRoles(sv){ensureRoles(sv);const L=members(sv),base=["owner","mod","mem"],ri=k=>sv.roles.findIndex(r=>r.id===roleOf(sv,k).id),mi=sv.owner===db.session?-1:ri(db.session);
+ modal(`<h2>Cargos</h2><div style="color:var(--mu);font-size:13px">Do mais alto para o mais baixo. Use as setas para mudar a hierarquia e marque o que cada cargo pode fazer.</div><div style="display:grid;gap:6px">${sv.roles.map((r,i)=>`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b style="color:${r.color};flex:1;min-width:90px">${esc(r.name)}</b>${r.id==="owner"?`<small style="color:var(--mu)">fixo</small>`:`<button class="ib" data-up="${i}" aria-label="Subir" ${i<=mi?"disabled":""}>▲</button><button class="ib" data-dn="${i}" aria-label="Descer" ${i<=mi?"disabled":""}>▼</button><label style="display:flex;gap:3px;align-items:center;font-size:12px"><input type="checkbox" data-pm="${r.id}|ch" ${r.ch||r.admin?"checked":""} ${i<=mi?"disabled":""} style="width:auto">Canais</label><label style="display:flex;gap:3px;align-items:center;font-size:12px"><input type="checkbox" data-pm="${r.id}|rl" ${r.rl||r.admin?"checked":""} ${i<=mi?"disabled":""} style="width:auto">Cargos</label><label style="display:flex;gap:3px;align-items:center;font-size:12px"><input type="checkbox" data-pm="${r.id}|admin" ${r.admin?"checked":""} ${i<=mi?"disabled":""} style="width:auto">Admin</label>${base.includes(r.id)?"":`<button class="ib" data-dr="${r.id}" ${i<=mi?"disabled":""}>Excluir</button>`}`}</div>`).join("")}</div><h3 style="font-size:16px">Membros</h3><div style="max-height:30vh;overflow:auto;display:grid;gap:6px">${L.map(x=>`<label style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="color:${roleOf(sv,x.k).color};font-weight:700">${esc(x.name)}</span><select data-k="${esc(x.k)}" ${x.k===sv.owner||(mi>=0&&ri(x.k)<=mi)?"disabled":""}>${sv.roles.filter((r,i)=>(i>mi&&r.id!=="owner")||r.id===roleOf(sv,x.k).id).map(r=>`<option value="${r.id}" ${r.id===roleOf(sv,x.k).id?"selected":""}>${esc(r.name)}</option>`).join("")}</select></label>`).join("")}</div>
+ <h3 style="font-size:16px">Novo cargo</h3><input id="rn" maxlength="20" placeholder="Nome do cargo"><div style="display:flex;gap:8px;flex-wrap:wrap">${COLORS.map((c,i)=>`<button type="button" class="av sm" data-rc="${c}" style="background:${c};border:2px solid ${i?"transparent":"var(--tx)"}" aria-label="Cor do cargo"></button>`).join("")}</div>
+ <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="ra" style="width:auto"> Administrador (pode criar canais e cargos)</label><div class="err" id="re"></div><button class="btn" id="rok">Criar cargo</button>
+ <button class="btn sec" onclick="closeM()">Fechar</button>`);
+ document.querySelectorAll("[data-k]").forEach(s=>s.onchange=()=>{sv.mr[s.dataset.k]=s.value;save();render();modalRoles(sv)});
+ const mv=(i,j)=>{if(j<1||j>=sv.roles.length)return;[sv.roles[i],sv.roles[j]]=[sv.roles[j],sv.roles[i]];save();render();modalRoles(sv)};
+ document.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>mv(+b.dataset.up,+b.dataset.up-1));
+ document.querySelectorAll("[data-dn]").forEach(b=>b.onclick=()=>mv(+b.dataset.dn,+b.dataset.dn+1));
+ document.querySelectorAll("[data-pm]").forEach(c=>c.onchange=()=>{const q=c.dataset.pm.split("|"),r=sv.roles.find(x=>x.id===q[0]);if(r.admin&&q[1]!=="admin"){r.admin=0;r.ch=1;r.rl=1}r[q[1]]=c.checked?1:0;save();render();modalRoles(sv)});
+ let rc=COLORS[0];document.querySelectorAll("[data-rc]").forEach(b=>b.onclick=()=>{rc=b.dataset.rc;document.querySelectorAll("[data-rc]").forEach(x=>x.style.borderColor="transparent");b.style.borderColor="var(--tx)"});
+ document.querySelectorAll("[data-dr]").forEach(b=>b.onclick=()=>{sv.roles=sv.roles.filter(r=>r.id!==b.dataset.dr);Object.keys(sv.mr).forEach(k=>{if(sv.mr[k]===b.dataset.dr)delete sv.mr[k]});save();render();modalRoles(sv)});
+ $("#rok").onclick=()=>{const n=$("#rn").value.trim();if(!n){$("#re").textContent="Digite um nome para o cargo.";return}sv.roles.push({id:uid(),name:n,color:rc,admin:$("#ra").checked?1:0});save();render();modalRoles(sv)}}
+const aiBadge=()=>`<button class="ib" id="aib" style="${S.ai===true?"color:var(--ok)":S.ai===false?"color:var(--bad)":""}">${S.ai===true?"IA ativa":S.ai===false?"IA desligada":"IA"}</button>`;
+function modalAI(){modal(`<h2>Inteligência dos bots</h2><p style="margin:0;color:var(--mu)">${S.ai===true?"Os bots estão respondendo com IA, entendendo gírias e assuntos variados.":"Com a IA desligada, os bots usam respostas básicas e entendem pouco. Ative para conversas de verdade. O navegador pode pedir uma permissão."}</p><div class="err" id="ae2"></div><button class="btn" id="aion">${S.ai===true?"Testar de novo":"Ativar IA"}</button><button class="btn sec" onclick="closeM()">Fechar</button>`);
+ $("#aion").onclick=async()=>{$("#ae2").textContent="Conectando…";try{const s=await window.claude.use("sample");if(!s){S.ai=false;$("#ae2").textContent="A IA não está disponível nesta visualização. Abra o link logado na sua conta do Claude e recarregue a página.";return}await s("Responda apenas: ok",{modelTier:"quick",cache:false});S.sample=s;S.ai=true;closeM();render()}catch(e){S.ai=false;$("#ae2").textContent=e&&e.code==="not_granted"?"Permissão negada. Clique em Ativar IA de novo e aceite o pedido.":"Não consegui conectar à IA agora. Tente de novo em instantes."}}}
+function bind(sv,ch){
+ document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{S.srv=b.dataset.s;S.ch=null;render()});
+ document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{S.ch=b.dataset.c;render()});
+ document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>can(sv,"ch")?modalChannel(sv,b.dataset.add):modal(`<h2>Sem permissão</h2><p style="margin:0;color:var(--mu)">Só cargos de administração criam canais.</p><button class="btn sec" onclick="closeM()">Fechar</button>`));
+ $("#addS").onclick=modalServer;$("#prof").onclick=modalProfile;
+ const A=$("#app");
+ const bg=$("#bg");if(bg)bg.onclick=()=>{A.classList.remove("memo");A.classList.toggle("nav")};
+ const bm=$("#bm");if(bm)bm.onclick=()=>{A.classList.remove("nav");A.classList.toggle("memo")};
+ const scr=$("#scrim");if(scr)scr.onclick=()=>A.classList.remove("nav","memo");
+ const ab=$("#aib");if(ab)ab.onclick=modalAI;
+ const rl=$("#roles");if(rl)rl.onclick=()=>modalRoles(sv);
+ document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>modalCard(sv,b.dataset.m));
+ const dmb=$("#dmb");if(dmb)dmb.onclick=()=>{S.srv="@dm";S.ch=null;render()};
+ document.querySelectorAll("[data-pk]").forEach(b=>b.onclick=()=>{S.pick=(S.pick===b.dataset.pk&&b.closest(".crow"))?null:b.dataset.pk;rr()});
+ document.querySelectorAll("[data-e]").forEach(b=>b.onclick=()=>{const t=$("#txt");t.value+=b.dataset.e;t.focus()});
+ document.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{const p=b.dataset.st.split("|");S.pick=null;sendRich(sv,ch,{st:p[0],a:p[1]})});
+ ["#pimg","#pgif"].forEach(s=>{const i=$(s);if(i)i.onchange=ev=>{const f=ev.target.files[0];if(f){S.pick=null;fitImg(f,d=>sendRich(sv,ch,{img:d}),m=>{S.err=m;rr();S.err=null})}}});
+ const inv=$("#inv");if(inv)inv.onclick=()=>modal(`<h2>Convidar amigos</h2><p style="color:var(--mu);margin:0">Código do servidor (neste protótipo, ele funciona no seu navegador):</p><input readonly value="${sv.id}" onclick="this.select()"><button class="btn sec" onclick="closeM()">Fechar</button>`);
+ const f=$("#f");if(f){const go=()=>{const v=$("#txt").value.trim();if(!v)return;send(sv,ch,v)};$("#txt").onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing){e.preventDefault();go()}};$("#sendb").onclick=go}
+ const j=$("#join");if(j)j.onclick=()=>joinVoice(sv,ch);
+ const sh=$("#share");if(sh)sh.onclick=shareScreen;
+ const sc=$("#screen");if(sc&&S.vid){sc.appendChild(S.vid);S.vid.play().catch(()=>{})}
+ ["#leave","#leave2"].forEach(s=>{const e=$(s);if(e)e.onclick=leaveVoice});
+ const mic=$("#mic");if(mic){mic.onclick=()=>{S.mic=!S.mic;if(S.stream)S.stream.getAudioTracks().forEach(t=>t.enabled=S.mic);render()};
+  $("#deaf").onclick=()=>{S.deaf=!S.deaf;if(S.deaf)S.mic=false;render()}}
+}
+function send(sv,ch,t){const u=me();(sv.msgs[ch.id]=sv.msgs[ch.id]||[]).push({u:u.name,c:u.color,t,at:Date.now()});save();render();$("#txt")?.focus();
+ botTurn(sv,ch,t,0)}
+function rr(){const ty=$("#txt")?.value,f=document.activeElement?.id==="txt",cl=$("#app")?.className;render();if(cl&&$("#app"))$("#app").className=cl;if($("#txt")){$("#txt").value=ty||"";if(f)$("#txt").focus()}}
+const EMO={"Rostos":"😀,😁,😂,🤣,😊,😍,😘,😎,🤔,😴,😭,😡,🥳,🤯,😱,🙄,😅","Gestos":"👍,👎,👏,🙌,🙏,💪,👋,🤝,✌️,👀","Espaço":"🚀,🪐,🌙,⭐,🌟,☄️,🌍,🛸,👽,🌌,✨","Corações":"❤️,🧡,💛,💚,💙,💜,🖤,💔,💖,🔥,💯","Objetos":"🎮,🎧,🎵,📚,💻,☕,🍕,🎂,🎉,🏆"};
+const STK=[["🚀","fly"],["🪐","spin"],["⭐","pulse"],["😂","shake"],["🔥","flick"],["👋","wave"],["❤️","beat"],["🎉","pop"],["👽","bounce"],["🛸","hover"]];
+function pickerHTML(){return `<div class="picker"><div class="tabs"><button type="button" class="ib" data-pk="emo">Emojis</button><button type="button" class="ib" data-pk="gif">GIFs</button></div>`+(S.pick==="emo"?Object.entries(EMO).map(([k,v])=>`<div class="grp" style="padding:4px 0">${k}</div><div>${v.split(",").map(e=>`<button type="button" data-e="${e}">${e}</button>`).join("")}</div>`).join(""):`<div>${STK.map(([e,a])=>`<button type="button" data-st="${e}|${a}"><span class="stk a-${a}" style="font-size:34px">${e}</span></button>`).join("")}</div><label class="ib" style="display:inline-block;margin-top:8px;cursor:pointer">Enviar GIF do aparelho<input id="pgif" type="file" accept="image/*" hidden></label><div style="color:var(--mu);font-size:12px;margin-top:6px">A busca online de GIFs não funciona aqui, porque esta página bloqueia conexões externas.</div>`)+`</div>`}
+function fitImg(file,cb,err){if(file.type==="image/gif"||file.type==="image/webp")return readImg(file,0,0,cb,err);
+ const r=new FileReader();r.onload=()=>{const i=new Image();i.onload=()=>{const k=Math.min(1,640/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);c.getContext("2d").drawImage(i,0,0,c.width,c.height);cb(c.toDataURL("image/jpeg",.75))};i.onerror=()=>err&&err("Não consegui abrir essa imagem.");i.src=r.result};r.readAsDataURL(file)}
+function sendRich(sv,ch,x){const u=me(),l=(sv.msgs[ch.id]=sv.msgs[ch.id]||[]);l.push({u:u.name,c:u.color,t:"",at:Date.now(),...x});const ok=save();if(!ok){l.pop();S.err="Não coube no armazenamento do navegador. Envie uma imagem menor."}rr();S.err=null;if(ok)botTurn(sv,ch,x.st?"[enviou a figurinha "+x.st+"]":"[enviou uma imagem]",0)}
+function openDM(k){S.srv="@dm";S.ch=[db.session,k].sort().join("|");closeM();render()}
+function railHTML(srvs){return `<nav class="rail" aria-label="Servidores"><button class="srv ${S.srv==="@dm"?"on":""}" id="dmb" title="Mensagens diretas" aria-label="Mensagens diretas">💬</button>${srvs.map(s=>`<button class="srv ${s.id===S.srv?"on":""}" data-s="${s.id}" title="${esc(s.name)}" style="background:url(${space(s.name+s.id,92,92)}) center/cover;color:#fff;text-shadow:0 1px 3px #000">${esc(s.name.slice(0,2))}</button>`).join("")}<button class="srv" id="addS" title="Criar servidor">+</button></nav>`}
+function renderDM(srvs){const u=me();db.dms=db.dms||{};
+ const pk=k=>[db.session,k].sort().join("|");
+ const peers=[...BOTS.map(b=>({k:"bot:"+b.name,name:b.name,s:"Bot com IA"})),...Object.keys(db.users).filter(k=>k!==db.session).map(k=>({k,name:db.users[k].name,s:db.users[k].status}))];
+ if(!peers.find(p=>pk(p.k)===S.ch))S.ch=pk(peers[0].k);
+ const cur=peers.find(p=>pk(p.k)===S.ch),pu=db.users[cur.k]||{},sv={id:"@dm",name:"Mensagens diretas",msgs:db.dms,roles:[{id:"mem",name:"",color:"var(--tx)"}],mr:{},members:[]},ch={id:S.ch,name:cur.name,type:"text"};
+ $("#root").innerHTML=`<div id="app">${railHTML(srvs)}<aside class="side" id="side"><header><h2>Mensagens</h2></header><div class="chs">${peers.map(p=>`<button class="ch ${pk(p.k)===S.ch?"on":""}" data-c="${pk(p.k)}">${av(p.name,"","sm")}<span>${esc(p.name)}</span></button>`).join("")}</div><div class="me">${av(u.name,u.color)}<div class="nm"><div>${esc(u.name)}</div><small>${esc(u.status)}</small></div><button class="ib" id="prof">Perfil</button></div></aside>
+ <section class="main"><header><div style="display:flex;gap:8px;align-items:center"><button class="ib burger" id="bg">Menu</button><h3>@ ${esc(cur.name)}</h3></div><div style="display:flex;gap:6px">${aiBadge()}</div></header>${textView(sv,ch)}</section>
+ <aside class="mem"><h3 style="font-size:14px;margin-bottom:6px">Sobre</h3><div style="height:70px;border-radius:10px;background:url(${pu.banner||space(cur.name+"bn",480,160)}) center/cover"></div><div class="r" style="margin-top:8px">${av(cur.name,"","sm")}<b>${esc(cur.name)}</b></div><small style="color:var(--mu)">${esc(cur.s)}</small><p style="margin:6px 0 0">${esc(pu.bio||BIO[cur.name]||"")}</p></aside><div class="scrim" id="scrim"></div></div>`;
+ bind(sv,ch);const m=$(".msgs");if(m)m.scrollTop=m.scrollHeight}
+const PERS={Luna:"animada, empolgada, usa exclamações e às vezes um emoji",Theo:"calmo, direto e prático, com humor seco",Iris:"curiosa, gosta de ciência e espaço, faz perguntas interessantes"};
+function typing(sv,ch,name,on){S.typing=on?{id:ch.id,name}:null;if(S.ch===ch.id&&S.srv===sv.id)rr()}
+async function botTurn(sv,ch,t,n){
+ const low=t.toLowerCase();
+ const dm=sv.id==="@dm",b=dm?BOTS.find(x=>x.name===ch.name):(n?pick(BOTS.filter(x=>x.name!==S.last)):(BOTS.find(x=>low.includes(x.name.toLowerCase()))||pick(BOTS)));
+ if(!b)return;
+ S.last=b.name;
+ await new Promise(r=>setTimeout(r,500+Math.random()*700));
+ typing(sv,ch,b.name,true);
+ const hist=(sv.msgs[ch.id]||[]).slice(-16).map(m=>m.u+": "+(m.t||(m.st?"[figurinha "+m.st+"]":m.img?"[imagem]":""))).join(String.fromCharCode(10));
+ let txt=null;
+ if(!S.sample&&S.ai!==false&&(S.tries=(S.tries||0)+1)<3){try{S.sample=await window.claude.use("sample")}catch(e){}if(!S.sample)S.ai=false}
+ if(S.sample&&S.ai!==false){try{
+  const r=await S.sample(`Você é ${b.name}, ${dm?`em uma conversa privada (DM) com ${me().name}`:`membro de um servidor de chat chamado “${sv.name}”, no canal #${ch.name}`}. Personalidade: ${PERS[b.name]}. Outros membros: ${BOTS.filter(x=>x!==b).map(x=>x.name).join(", ")} e ${me().name}. Responda em português do Brasil, de modo natural e informal, em no máximo 3 frases curtas, sem markdown. Você entende gírias brasileiras (suave, tranquilo, de boa, mano, daora, tmj, kkk), anime, desenhos, jogos, séries, memes, estudos e tecnologia, e conversa sobre qualquer assunto com conhecimento real. Nunca diga que não entendeu uma gíria comum: reaja a ela naturalmente. Use o que a pessoa disse para trazer uma informação, opinião ou pergunta específica, nunca uma resposta genérica. Responda de verdade ao que foi dito, com conteúdo útil e coerente com a conversa. Se a mensagem não for para você, pode concordar ou comentar brevemente.
+
+Conversa recente:
+${hist}
+
+Escreva apenas a próxima mensagem de ${b.name}, sem o nome dela no início.`,{modelTier:"default",cache:false});
+  txt=(r.text||"").trim();S.ai=true;if(txt.toLowerCase().startsWith(b.name.toLowerCase()+":"))txt=txt.slice(b.name.length+1).trim()}catch(e){if(e&&e.code==="not_granted")S.ai=false}}
+ if(!txt)txt=t.startsWith("[")?pick(["Gostei dessa!","Boa! Rendeu.","Hahaha, boa."]):botReply(b,t);
+ typing(sv,ch,b.name,false);
+ (sv.msgs[ch.id]=sv.msgs[ch.id]||[]).push({u:b.name,c:b.color,t:txt,at:Date.now()});save();rr();
+ if(!dm&&n<1&&Math.random()<.3)botTurn(sv,ch,txt,n+1)}
+async function shareScreen(){
+ if(S.screen){stopShare();return}
+ if(!navigator.mediaDevices?.getDisplayMedia){S.shareErr="Este navegador não permite compartilhar a tela, o que é comum em celulares. Use um computador.";render();return}
+ try{const st=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
+  S.screen=st;S.vid=document.createElement("video");S.vid.muted=true;S.vid.autoplay=true;S.vid.playsInline=true;S.vid.srcObject=st;S.vid.setAttribute("aria-label","Tela compartilhada");
+  st.getVideoTracks()[0].onended=stopShare;S.shareErr="";render()}
+ catch(e){const fr=window.self!==window.top;S.shareErr=(e&&e.name==="NotAllowedError"?(fr?"O navegador bloqueou o compartilhamento porque a página está dentro de outra página (como o Claude). Baixe o arquivo e abra com duplo clique no navegador, sem usar a pré-visualização.":"Compartilhamento cancelado ou negado. Se nenhuma janela apareceu, libere “Compartilhar tela” nas permissões do site."):"Não foi possível compartilhar a tela neste navegador.")+" ("+(e&&e.name)+(e&&e.message?": "+e.message:"")+"; permissão da página: "+(document.permissionsPolicy?.allowsFeature?.("display-capture")??"desconhecida")+")";render()}}
+function stopShare(){if(S.screen)S.screen.getTracks().forEach(t=>t.stop());S.screen=null;S.vid=null;render()}
+let talkTimer=null,ctx=null;
+async function joinVoice(sv,ch){
+ ch.bots=BOTS.slice(0,2);S.voice={id:ch.id,name:ch.name,srv:sv.id};
+ try{S.stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  ctx=new (window.AudioContext||window.webkitAudioContext)();const a=ctx.createAnalyser();ctx.createMediaStreamSource(S.stream).connect(a);
+  const d=new Uint8Array(a.frequencyBinCount);S.meter=setInterval(()=>{a.getByteFrequencyData(d);const avg=d.reduce((x,y)=>x+y,0)/d.length;const t=avg>12&&S.mic;if(!!S.talk[me().name]!==t){S.talk[me().name]=t;soft()}},150)}catch(e){S.stream=null}
+ talkTimer=setInterval(()=>{const b=BOTS[Math.floor(Math.random()*2)];S.talk[b.name]=true;soft();setTimeout(()=>{S.talk[b.name]=false;soft()},1400)},3500);
+ render()}
+function soft(){document.querySelectorAll(".av.sm,.tile .av").forEach(()=>{});render()}
+function leaveVoice(){const sv=db.servers.find(s=>s.id===S.voice?.srv);sv?.channels.forEach(c=>delete c.bots);
+ clearInterval(talkTimer);clearInterval(S.meter);if(S.stream)S.stream.getTracks().forEach(t=>t.stop());if(ctx)ctx.close();
+ if(S.screen){S.screen.getTracks().forEach(t=>t.stop());S.screen=null;S.vid=null}S.shareErr="";S.stream=null;S.voice=null;S.talk={};S.mic=true;S.deaf=false;render()}
+function modal(h){$("#mbox").innerHTML=h;$("#modal").classList.add("on")}
+function closeM(){$("#modal").classList.remove("on")}
+function modalTerms(){const P=(t,b)=>`<p style="margin:0"><b style="color:var(--tx)">${t}</b> ${b}</p>`;modal(`<h2>Termos de Uso e Privacidade</h2><div style="display:grid;gap:8px;font-size:14px;color:var(--mu)">${P("O que é.","O Effect Focus é um protótipo de demonstração, oferecido como está, sem garantias.")}${P("Seus dados.","Contas, mensagens, fotos e GIFs ficam salvos apenas no seu navegador, neste aparelho. Nada é enviado a um servidor do Effect Focus. Limpar os dados do navegador apaga tudo.")}${P("Senha.","A senha é guardada de forma simples e só localmente. Não use uma senha que você usa em outros serviços.")}${P("Bots e IA.","As respostas dos bots são geradas por IA e podem conter erros. Quando a IA está ativa, o que você escreve para os bots é processado pelo Claude, da Anthropic. Não compartilhe dados sensíveis.")}${P("Conduta.","Não use o app para assédio, conteúdo ilegal ou para enviar conteúdo que você não tem direito de usar.")}${P("Independência.","O Effect Focus não é afiliado nem endossado por nenhum outro serviço de mensagens.")}${P("Idade.","Uso a partir de 13 anos. Menores de 18 anos devem ter ciência dos responsáveis.")}${P("Texto completo.","Veja o arquivo TERMOS.md no repositório do projeto.")}</div><button class="btn sec" onclick="closeM()">Fechar</button>`)}
+$("#modal").onclick=e=>{if(e.target.id==="modal")closeM()};
+function modalServer(){modal(`<h2>Criar servidor</h2><label>Nome do servidor<input id="sn" maxlength="30" placeholder="Ex.: Estudos da turma"></label>
+ <label>Ou entrar com um código<input id="sc" placeholder="Código de convite"></label><div class="err" id="se"></div>
+ <button class="btn" id="sok">Criar servidor</button><button class="btn sec" id="sj">Entrar com código</button>`);
+ $("#sok").onclick=()=>{const n=$("#sn").value.trim();if(!n){$("#se").textContent="Digite um nome para o servidor.";return}
+  const s=newServer(n);db.servers.push(s);S.srv=s.id;S.ch=null;save();closeM();render()};
+ $("#sj").onclick=()=>{const s=db.servers.find(x=>x.id===$("#sc").value.trim());if(!s){$("#se").textContent="Código não encontrado neste navegador.";return}
+  if(!s.members.includes(db.session))s.members.push(db.session);S.srv=s.id;S.ch=null;save();closeM();render()}}
+function modalChannel(sv,type){modal(`<h2>Novo canal de ${type==="text"?"texto":"voz"}</h2><label>Nome<input id="cn" maxlength="24"></label><div class="err" id="ce"></div><button class="btn" id="cok">Criar canal</button>`);
+ $("#cok").onclick=()=>{const n=$("#cn").value.trim().toLowerCase().replace(/\s+/g,"-");if(!n){$("#ce").textContent="Digite um nome para o canal.";return}
+  const c={id:uid(),name:type==="voice"?$("#cn").value.trim():n,type};sv.channels.push(c);S.ch=c.id;save();closeM();render()}}
+function modalProfile(){const u=me();
+ modal(`<h2>Seu perfil</h2><div id="bprev" style="height:84px;border-radius:10px;background:url(${u.banner||space(u.name+"bn",480,160)}) center/cover"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn sec" style="cursor:pointer;color:var(--tx)">Escolher banner<input id="bf" type="file" accept="image/*" hidden></label><button type="button" class="ib" id="brnd">Banner aleatório</button></div><div class="err" id="pe"></div><div style="display:flex;align-items:center;gap:12px"><div class="big" id="pprev">${av(u.name,u.color)}</div><label class="btn sec" style="cursor:pointer;color:var(--tx)">Escolher foto<input id="pf" type="file" accept="image/*" hidden></label><button type="button" class="ib" id="prm">Remover</button></div>
+ <label>Nome de exibição<input id="pn" maxlength="24" value="${esc(u.name)}"></label>
+ <label>Status<input id="ps" maxlength="40" value="${esc(u.status)}"></label>
+ <label>Sobre você<textarea id="pb" rows="2" maxlength="120">${esc(u.bio||"")}</textarea></label>
+ <button type="button" class="btn sec" id="prnd">Foto aleatória do espaço</button>
+ <button class="btn" id="pok">Salvar perfil</button><button class="btn sec" id="out">Sair da conta</button>`);
+ let col=u.color,photo=u.photo;
+ const prev=()=>{$("#pprev").innerHTML=photo?`<span class="av"><img alt="" src="${photo}"></span>`:`<span class="av"><img alt="" src="${space(u.name)}"></span>`};
+ $("#pf").onchange=e=>{const f=e.target.files[0];if(f)readImg(f,160,160,d=>{photo=d;prev()},m=>{$("#pe").textContent=m})};
+ $("#prm").onclick=()=>{photo=undefined;prev()};
+ $("#prnd").onclick=()=>{photo=space("r"+Math.random(),160,160);prev()};
+ let banner=u.banner;const bprev=()=>{$("#bprev").style.background=`url(${banner||space(u.name+"bn",480,160)}) center/cover`};
+ $("#bf").onchange=e=>{const f=e.target.files[0];if(f)readImg(f,480,160,d=>{banner=d;bprev()},m=>{$("#pe").textContent=m})};
+ $("#brnd").onclick=()=>{banner=space("b"+Math.random(),480,160);bprev()};
+ document.querySelectorAll("[data-col]").forEach(b=>b.onclick=()=>{col=b.dataset.col;prev();document.querySelectorAll("[data-col]").forEach(x=>x.style.border="3px solid transparent");b.style.border="3px solid var(--tx)"});
+ $("#pok").onclick=()=>{u.name=$("#pn").value.trim()||u.name;u.status=$("#ps").value.trim()||"Online";u.bio=$("#pb").value;u.color=col;const op=u.photo,ob=u.banner;u.photo=photo;u.banner=banner;if(!save()){u.photo=op;u.banner=ob;$("#pe").textContent="Não coube no armazenamento do navegador. Use uma foto ou GIF menor.";$("#pe").scrollIntoView({block:"center"});return}closeM();render()};
+ $("#out").onclick=()=>{if(S.voice)leaveVoice();db.session=null;save();closeM();S.view="login";render()}}
+function renderAuth(){const reg=S.view==="reg";
+ $("#root").innerHTML=`<div class="auth"><div class="box" id="af"><div class="brand"><span class="logo"></span>Effect Focus</div>
+ <p style="margin:0;color:var(--mu)">${reg?"Crie sua conta para conversar e fazer calls.":"Entre para voltar às suas conversas."}</p>
+ ${reg?`<label>Nome de exibição<input id="an" required maxlength="24"></label>`:""}
+ <label>E-mail<input id="ae" type="email" required autocomplete="email"></label>
+ <label>Senha<input id="ap" type="password" required minlength="4" autocomplete="${reg?"new-password":"current-password"}"></label>
+ ${reg?`<label style="display:flex;gap:8px;align-items:flex-start;font-size:13px"><input type="checkbox" id="at" style="width:auto;margin-top:3px"><span>Li e aceito os <a class="link" href="#" id="tl">Termos de Uso e a Política de Privacidade</a></span></label>`:""}<div class="err" id="er"></div><button type="button" class="btn" id="aok">${reg?"Criar conta":"Entrar"}</button>${reg?"":`<button type="button" class="link" id="tl2">Termos de Uso e Privacidade</button>`}
+ <button type="button" class="link" id="sw">${reg?"Já tenho conta":"Criar uma conta"}</button>
+ <small style="color:var(--mu)">Protótipo: contas e mensagens ficam salvas só neste navegador e neste aparelho. Uma conta criada no celular não existe no notebook.</small>${STORE_OK?"":`<div class="err">Atenção: este navegador está bloqueando o armazenamento (aba anônima ou bloqueio de cookies). A conta só vale até fechar a página.</div>`}</div></div>`;
+ $(".auth").style.background=`linear-gradient(rgba(8,10,25,.45),rgba(8,10,25,.45)),url(${space("effectfocus",480,360)}) center/cover`;
+ $("#sw").onclick=()=>{S.view=reg?"login":"reg";render()};
+ const go=()=>{const ev=$("#ae").value.trim(),pv=$("#ap").value;if(!ev.includes("@")||pv.length<4||(reg&&!$("#an").value.trim())){$("#er").textContent=reg?"Preencha nome, e-mail válido e senha com 4 ou mais caracteres.":"Preencha e-mail válido e senha com 4 ou mais caracteres.";return}if(reg&&!$("#at").checked){$("#er").textContent="Para criar a conta, aceite os Termos de Uso.";return}const em=$("#ae").value.trim().toLowerCase(),pw=$("#ap").value;
+  if(reg){if(db.users[em]){$("#er").textContent="Este e-mail já tem uma conta. Tente entrar.";return}
+   db.users[em]={name:$("#an").value.trim(),pass:btoa(unescape(encodeURIComponent(pw))),color:COLORS[Math.floor(Math.random()*COLORS.length)],status:"Online",bio:""};db.session=em;
+   const s=newServer("Meu primeiro servidor");db.servers.push(s)}
+  else{const u=db.users[em];if(!u||u.pass!==btoa(unescape(encodeURIComponent(pw)))){$("#er").textContent="E-mail ou senha incorretos. Confira e tente de novo.";return}db.session=em}
+  save();render()};
+ $("#aok").onclick=go;[$("#tl"),$("#tl2")].forEach(x=>{if(x)x.onclick=e=>{e.preventDefault();modalTerms()}});["#ae","#ap","#an"].forEach(s=>{const i=$(s);if(i)i.onkeydown=e=>{if(e.key==="Enter")go()}})}
+const STORE_OK=(()=>{try{localStorage.setItem("ef_t","1");localStorage.removeItem("ef_t");return true}catch(e){return false}})();
+window.addEventListener("error",e=>{try{let b=$("#errb");if(!b){b=document.createElement("div");b.id="errb";b.style.cssText="position:fixed;left:8px;right:8px;top:8px;z-index:20;background:var(--bad);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px";document.body.appendChild(b)}b.textContent="Erro: "+e.message+" (linha "+e.lineno+")"}catch(x){}});
+load();render();
+try{window.claude?.use("sample").then(s=>{S.sample=s}).catch(()=>{})}catch(e){}
+</script>
+</body>
+</html>
