@@ -6,7 +6,7 @@
 
 ## 1. Quem somos
 
-O Effect Focus é um protótipo de aplicativo de conversas, mantido por **Pedro]**. Contato: **[effectsupport@gmail.com]**.
+O Effect Focus é um protótipo de aplicativo de conversas, mantido por **Pedro]**. Contato: **[effectfocusupport@gmail.com]**.
 
 ## 2. Aceitação
 
@@ -57,13 +57,13 @@ Mensagens, fotos, banners, GIFs e demais conteúdos que você insere **continuam
 
 **Terceiros.** A hospedagem do site (por exemplo, GitHub Pages) pode registrar dados técnicos de acesso, como endereço IP, segundo as próprias políticas. Se a IA estiver ativa, vale o que está descrito na seção 8.
 
-**Seus direitos.** Nos termos da Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você pode pedir informações sobre o tratamento dos seus dados, correção, eliminação e outros direitos previstos em lei, escrevendo para **[effectsupport@gmail.com]**. Como os dados ficam no seu aparelho, você mesmo pode apagá-los limpando os dados do site no navegador.
+**Seus direitos.** Nos termos da Lei Geral de Proteção de Dados (Lei nº 13.709/2018), você pode pedir informações sobre o tratamento dos seus dados, correção, eliminação e outros direitos previstos em lei, escrevendo para **[effectfocusupport@gmail.com]**. Como os dados ficam no seu aparelho, você mesmo pode apagá-los limpando os dados do site no navegador.
 
 **Se o serviço mudar.** Caso o Effect Focus passe a usar servidores próprios, esta política será atualizada **antes** disso, informando quais dados são coletados, para quê e por quanto tempo.
 
 ## 10. Propriedade intelectual
 
-O nome e a identidade visual do Effect Focus pertencem a **[Pedro D.]**. O Effect Focus **não é afiliado, patrocinado nem endossado** pelo Discord, pela Anthropic ou por qualquer outro serviço de mensagens, cujos nomes e marcas pertencem aos respectivos titulares. Se você acredita que algum conteúdo viola seus direitos, escreva para **[effectsupport@gmail.com]** com a descrição do conteúdo e a razão da reclamação.
+O nome e a identidade visual do Effect Focus pertencem a **[Pedro D.]**. O Effect Focus **não é afiliado, patrocinado nem endossado** pelo Discord, pela Anthropic ou por qualquer outro serviço de mensagens, cujos nomes e marcas pertencem aos respectivos titulares. Se você acredita que algum conteúdo viola seus direitos, escreva para **[effectfocusupport@gmail.com]** com a descrição do conteúdo e a razão da reclamação.
 
 ## 11. Limitação de responsabilidade
 
